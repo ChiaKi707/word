@@ -13,111 +13,102 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class StudyView extends JFrame {
-
-    // 声明组件
-    private JLabel lblWord;          // 显示单词
-    private JTextArea txtMeaning;    // 显示释义 (使用TextArea支持多行)
-    private JButton btnShowMeaning;  // 查看释义按钮
-    private JButton btnNext;         // 下一个按钮
-    private JLabel lblProgress;      // 进度提示 (如: 1/20)
+    private JLabel lblWord;          // 单词
+    private JTextArea txtMeaning;    // 释义
+    
+    // 底部按钮容器
+    private JPanel bottomPanel;      // 放按钮的容器
+    private JButton btnKnown;        // 认识
+    private JButton btnUnknown;      // 不认识
+    private JButton btnNext;         // 下一个
 
     public StudyView() {
-        // 窗口基本属性
-        setTitle("背词软件 - 学习模式");
-        setSize(600, 400);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 关闭窗口退出程序
-        setLocationRelativeTo(null); // 居中显示
-        setLayout(new BorderLayout(10, 10)); // 边界布局，间距10
-
-        initCenterPanel();
-        initBottomPanel();
+        initUI();
     }
 
-    // 中间区域（单词和释义）
-    private void initCenterPanel() {
+    private void initUI() {
+        setTitle("背单词 - 学习");
+        setSize(500, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+
+        // --- 中间区域 (单词 + 释义) ---
         JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS)); // 垂直排列
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(50, 20, 20, 20)); // 内边距
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(50, 20, 20, 20));
 
-        // --- 单词部分 ---
-        lblWord = new JLabel("Word Loading...");
-        lblWord.setFont(new Font("Arial", Font.BOLD, 40)); // 大字体
-        lblWord.setAlignmentX(Component.CENTER_ALIGNMENT); // 居中
+        lblWord = new JLabel("Word");
+        lblWord.setFont(new Font("Arial", Font.BOLD, 32));
+        lblWord.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // --- 释义部分 ---
-        txtMeaning = new JTextArea("Meaning here...");
-        txtMeaning.setFont(new Font("SimHei", Font.PLAIN, 18)); // 中文字体
-        txtMeaning.setLineWrap(true);       // 自动换行
+        txtMeaning = new JTextArea("Meaning");
+        txtMeaning.setFont(new Font("SimHei", Font.PLAIN, 18));
+        txtMeaning.setLineWrap(true);
         txtMeaning.setWrapStyleWord(true);
-        txtMeaning.setEditable(false);      // 不可编辑
-        txtMeaning.setOpaque(false);        // 透明背景，像Label一样
-        txtMeaning.setBackground(new Color(0,0,0,0));
+        txtMeaning.setEditable(false);
+        txtMeaning.setOpaque(false); // 透明背景
         txtMeaning.setAlignmentX(Component.CENTER_ALIGNMENT);
-        txtMeaning.setVisible(false);       // 默认隐藏释义
-
-        // 将组件加入面板
+        
         centerPanel.add(lblWord);
-        centerPanel.add(Box.createVerticalStrut(30)); // 增加30像素的垂直间距
+        centerPanel.add(Box.createVerticalStrut(40)); // 间距
         centerPanel.add(txtMeaning);
 
-        // 将面板加入窗口中间
         this.add(centerPanel, BorderLayout.CENTER);
-    }
 
-    // 底部区域（按钮）
-    private void initBottomPanel() {
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        // --- 底部区域 (按钮) ---
+        bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        
+        btnKnown = new JButton("我认识");
+        btnUnknown = new JButton("不认识");
+        btnNext = new JButton("下一个");
+        
+        // 样式微调
+        Dimension btnSize = new Dimension(100, 40);
+        btnKnown.setPreferredSize(btnSize);
+        btnUnknown.setPreferredSize(btnSize);
+        btnNext.setPreferredSize(new Dimension(200, 40)); // "下一个"按钮大一点
 
-        btnShowMeaning = new JButton("查看释义");
-        btnShowMeaning.setPreferredSize(new Dimension(120, 40));
-        btnShowMeaning.setFont(new Font("SimHei", Font.PLAIN, 14));
-
-        btnNext = new JButton("下一个 / 认识");
-        btnNext.setPreferredSize(new Dimension(120, 40));
-        btnNext.setFont(new Font("SimHei", Font.PLAIN, 14));
-
-        // 进度标签
-        lblProgress = new JLabel("进度: --/--");
-
-        bottomPanel.add(lblProgress);
-        bottomPanel.add(btnShowMeaning);
+        bottomPanel.add(btnKnown);
+        bottomPanel.add(btnUnknown);
         bottomPanel.add(btnNext);
 
         this.add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    // ================= 提供给 Controller 调用的方法 =================
+    // ==================== 核心逻辑方法 ====================
 
-    public void setWordText(String text) {
-        lblWord.setText(text);
-    }
-
-    public void setMeaningText(String text) {
-        txtMeaning.setText(text);
-    }
-
-    public void setMeaningVisible(boolean visible) {
-        txtMeaning.setVisible(visible);
-        // 重新绘制一下，防止界面刷新不及时
-        this.revalidate();
-        this.repaint();
-    }
-    
-    public void updateProgress(int current, int total) {
-        lblProgress.setText("进度: " + current + "/" + total);
-    }
-
-    // 绑定事件监听器
-    public void addShowMeaningListener(ActionListener listener) {
-        btnShowMeaning.addActionListener(listener);
-    }
-
-    public void addNextListener(ActionListener listener) {
-        btnNext.addActionListener(listener);
+    /**
+     * 切换视图模式
+     * @param isDecisionPhase 
+     *    true:  答题阶段 (显示 认识/不认识，隐藏 释义，隐藏 下一个)
+     *    false: 结果阶段 (隐藏 认识/不认识，显示 释义，显示 下一个)
+     */
+    public void switchMode(boolean isDecisionPhase) {
+        if (isDecisionPhase) {
+            // 状态A：刚看到单词
+            txtMeaning.setVisible(false);      // 藏释义
+            btnKnown.setVisible(true);         // 显按钮
+            btnUnknown.setVisible(true);
+            btnNext.setVisible(false);         // 藏下一个
+        } else {
+            // 状态B：看答案
+            txtMeaning.setVisible(true);       // 显释义
+            btnKnown.setVisible(false);        // 藏按钮
+            btnUnknown.setVisible(false);
+            btnNext.setVisible(true);          // 显下一个
+        }
+        // 刷新布局，防止按钮隐藏后位置没更新
+        bottomPanel.revalidate();
+        bottomPanel.repaint();
     }
 
-    // 弹窗提示
-    public void showMessage(String msg) {
-        JOptionPane.showMessageDialog(this, msg);
-    }
+    // 设置文本
+    public void setWord(String text) { lblWord.setText(text); }
+    public void setMeaning(String text) { txtMeaning.setText(text); }
+
+    // 监听器绑定
+    public void addKnownListener(ActionListener l) { btnKnown.addActionListener(l); }
+    public void addUnknownListener(ActionListener l) { btnUnknown.addActionListener(l); }
+    public void addNextListener(ActionListener l) { btnNext.addActionListener(l); }
 }
